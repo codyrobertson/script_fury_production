@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-07-17T11:34:25.649919",
+  "total_time": 86.36800289154053,
+  "analysis_time": 29.608385801315308,
+  "characters_found": 2,
+  "scenes_analyzed": 6,
+  "total_frames": 8,
+  "avg_frames_per_scene": 1.3333333333333333,
+  "realize_scenes": 1,
+  "sanitization_success_rate": 1.0,
+  "consistency_keywords": 5,
+  "frame_generation_success": true,
+  "scores": {
+    "speed": 51.95807099342346,
+    "frame_logic": 100,
+    "sanitization": 100.0,
+    "consistency": 100.0,
+    "generation": 100,
+    "overall": 90.39161419868469
+  },
+  "verdict": "PASS"
+}

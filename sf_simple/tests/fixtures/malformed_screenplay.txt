@@ -1,0 +1,12 @@
+This is not a proper screenplay format.
+
+It has no scene headers.
+No character names.
+Just random text that should still be processed.
+
+Some lines might look like:
+FAKE CHARACTER
+But they're not in the right format.
+
+More random text here.
+End of file.

@@ -1,0 +1,877 @@
+{% extends "base.html" %}
+
+{% block title %}Storyboard Gallery - {{ project.filename }}{% endblock %}
+
+{% block content %}
+<div class="storyboard-page">
+    <div class="storyboard-header">
+        <div class="header-content">
+            <h1>{{ analysis.title or project.filename }}</h1>
+            <div class="storyboard-meta">
+                <span class="meta-item">{{ frames|length }} Frames</span>
+                <span class="meta-item">{{ analysis.total_scenes }} Scenes</span>
+                <span class="meta-item">{{ analysis.page_count }} Pages</span>
+                <span class="meta-item">{{ analysis.characters|length }} Characters</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="window.location.href='/processing/{{ project.id }}'">
+                ← Back to Details
+            </button>
+            <button class="btn btn-primary" onclick="printStoryboard()">
+                🖨️ Print Storyboard
+            </button>
+        </div>
+    </div>
+
+    <!-- Character Gallery -->
+    {% if analysis.characters %}
+    <div class="characters-section">
+        <h2>Characters</h2>
+        <div class="characters-grid">
+            {% for char_name, char_info in analysis.characters.items() %}
+            <div class="character-card">
+                <div class="character-name">{{ char_name }}</div>
+                <div class="character-description">
+                    {% if char_info is mapping %}
+                        {% if char_info.description %}
+                            <div class="char-detail"><strong>Description:</strong> {{ char_info.description }}</div>
+                        {% endif %}
+                        {% if char_info.distinctive_features %}
+                            <div class="char-detail"><strong>Features:</strong> {{ char_info.distinctive_features }}</div>
+                        {% endif %}
+                        {% if char_info.clothing %}
+                            <div class="char-detail"><strong>Clothing:</strong> {{ char_info.clothing }}</div>
+                        {% endif %}
+                        {% if char_info.props %}
+                            <div class="char-detail"><strong>Props:</strong> {{ char_info.props }}</div>
+                        {% endif %}
+                        {% if char_info.age_group %}
+                            <div class="char-detail"><strong>Age:</strong> {{ char_info.age_group }}</div>
+                        {% endif %}
+                    {% elif char_info is string %}
+                        {{ char_info }}
+                    {% else %}
+                        Character description available
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Storyboard Gallery -->
+    <div class="storyboard-gallery">
+        <h2>Storyboard Frames</h2>
+        <div class="gallery-grid">
+            {% for frame in frames %}
+            <div class="gallery-frame" onclick="openFrameDrawer('{{ frame.frame_id }}')">
+                <div class="frame-number">{{ frame.scene_number }}.{{ frame.frame_number }}</div>
+                <div class="frame-image-container">
+                    {% if frame.image_url %}
+                    <img src="{{ frame.image_url }}" alt="Frame {{ frame.frame_id }}" 
+                         class="frame-image" style="object-fit: contain; width: 100%; height: 100%;">
+                    {% else %}
+                    <div class="frame-placeholder">
+                        <div class="placeholder-content">
+                            <p>Scene {{ frame.scene_number }}</p>
+                            <p>{{ frame.location }}</p>
+                            <p>{{ frame.time_of_day }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="frame-caption">
+                    <div class="frame-location">{{ frame.location }} - {{ frame.time_of_day }}</div>
+                    <div class="frame-description">{{ frame.key_visual }}</div>
+                    {% if frame.characters %}
+                    <div class="frame-characters">{{ frame.characters|join(', ') }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Scene Breakdown -->
+    <div class="scenes-section">
+        <h2>Scene Breakdown</h2>
+        <div class="scenes-list">
+            {% for scene in analysis.scenes %}
+            <div class="scene-item">
+                <div class="scene-header">
+                    <span class="scene-number">Scene {{ scene.scene_number }}</span>
+                    <span class="scene-slug">{{ scene.slug_line }}</span>
+                </div>
+                <div class="scene-details">
+                    <div class="scene-location">{{ scene.location }} - {{ scene.time_of_day }}</div>
+                    <div class="scene-description">{{ scene.description }}</div>
+                    {% if scene.characters %}
+                    <div class="scene-characters">Characters: {{ scene.characters|join(', ') }}</div>
+                    {% endif %}
+                    <div class="scene-visual">Key Visual: {{ scene.key_visual_moment }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Frame Drawer -->
+<div id="frameDrawer" class="frame-drawer">
+    <div class="drawer-overlay" onclick="closeFrameDrawer()"></div>
+    <div class="drawer-content">
+        <div class="drawer-header">
+            <h3 id="drawerTitle">Frame Details</h3>
+            <button class="drawer-close" onclick="closeFrameDrawer()">✕</button>
+        </div>
+        
+        <div class="drawer-body">
+            <!-- Full Frame Preview -->
+            <div class="drawer-image-section">
+                <div class="full-frame-container">
+                    <img id="drawerImage" src="" alt="Frame preview" class="full-frame-image">
+                    <div id="drawerPlaceholder" class="drawer-placeholder" style="display: none;">
+                        <div class="placeholder-content">
+                            <p>No image available</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Frame Metadata -->
+            <div class="drawer-metadata-section">
+                <div class="metadata-tabs">
+                    <button class="tab-button active" onclick="showTab('scene')">Scene</button>
+                    <button class="tab-button" onclick="showTab('prompt')">Prompt</button>
+                    <button class="tab-button" onclick="showTab('analysis')">Analysis</button>
+                    <button class="tab-button" onclick="showTab('technical')">Technical</button>
+                </div>
+                
+                <div class="tab-content">
+                    <!-- Scene Tab -->
+                    <div id="scene-tab" class="tab-pane active">
+                        <div class="metadata-group">
+                            <h4>Scene Information</h4>
+                            <div class="metadata-item">
+                                <label>Location:</label>
+                                <span id="metaLocation">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <label>Time of Day:</label>
+                                <span id="metaTimeOfDay">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <label>Mood:</label>
+                                <span id="metaMood">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <label>Story Beat:</label>
+                                <span id="metaStoryBeat">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <label>Importance:</label>
+                                <span id="metaImportance">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="metadata-group">
+                            <h4>Characters</h4>
+                            <div id="metaCharacters" class="characters-list">-</div>
+                        </div>
+                        
+                        <div class="metadata-group">
+                            <h4>Key Visual Moment</h4>
+                            <div id="metaKeyVisual" class="description-text">-</div>
+                        </div>
+                        
+                        <div class="metadata-group">
+                            <h4>Scene Description</h4>
+                            <div id="metaSceneDescription" class="description-text">-</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Prompt Tab -->
+                    <div id="prompt-tab" class="tab-pane">
+                        <div class="metadata-group">
+                            <h4>Original Prompt</h4>
+                            <div id="metaOriginalPrompt" class="prompt-text">-</div>
+                        </div>
+                        
+                        <div class="metadata-group">
+                            <h4>Used Prompt (Sanitized)</h4>
+                            <div id="metaUsedPrompt" class="prompt-text">-</div>
+                        </div>
+                        
+                        <div id="sanitizationInfo" class="metadata-group" style="display: none;">
+                            <h4>Sanitization Changes</h4>
+                            <div class="sanitization-badge">
+                                <span id="sanitizationBadge" class="badge">Sanitized</span>
+                                <span id="sensitiveContentBadge" class="badge sensitive" style="display: none;">Sensitive Content</span>
+                            </div>
+                            <div id="metaSanitizationChanges" class="changes-list">-</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Analysis Tab -->
+                    <div id="analysis-tab" class="tab-pane">
+                        <div class="metadata-group">
+                            <h4>Camera & Composition</h4>
+                            <div class="metadata-item">
+                                <label>Camera Angles:</label>
+                                <span id="metaCameraAngles">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="metadata-group">
+                            <h4>Character Analysis</h4>
+                            <div id="characterAnalysis">-</div>
+                        </div>
+                        
+                        <div class="metadata-group">
+                            <h4>Visual Elements</h4>
+                            <div class="metadata-item">
+                                <label>Props:</label>
+                                <span id="metaProps">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Technical Tab -->
+                    <div id="technical-tab" class="tab-pane">
+                        <div class="metadata-group">
+                            <h4>Generation Details</h4>
+                            <div class="metadata-item">
+                                <label>Frame ID:</label>
+                                <span id="metaFrameId">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <label>Generated:</label>
+                                <span id="metaGenerationTime">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <label>Cost:</label>
+                                <span id="metaCost">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <label>Status:</label>
+                                <span id="metaStatus">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="metadata-group">
+                            <h4>Image Technical</h4>
+                            <div class="metadata-item">
+                                <label>Format:</label>
+                                <span id="metaImageFormat">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <label>Size:</label>
+                                <span id="metaImageSize">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const frames = {{ frames|tojson }};
+let currentFrameIndex = 0;
+
+function openFrameDrawer(frameId) {
+    const frame = frames.find(f => f.frame_id === frameId);
+    if (!frame) return;
+    
+    currentFrameIndex = frames.findIndex(f => f.frame_id === frameId);
+    populateFrameDrawer(frame);
+    
+    const drawer = document.getElementById('frameDrawer');
+    drawer.classList.add('open');
+    document.body.style.overflow = 'hidden'; // Prevent background scroll
+}
+
+function closeFrameDrawer() {
+    const drawer = document.getElementById('frameDrawer');
+    drawer.classList.remove('open');
+    document.body.style.overflow = ''; // Restore scroll
+}
+
+function populateFrameDrawer(frame) {
+    // Update title
+    document.getElementById('drawerTitle').textContent = `Scene ${frame.scene_number}.${frame.frame_number}`;
+    
+    // Update image
+    const drawerImage = document.getElementById('drawerImage');
+    const drawerPlaceholder = document.getElementById('drawerPlaceholder');
+    
+    if (frame.image_url) {
+        drawerImage.src = frame.image_url;
+        drawerImage.style.display = 'block';
+        drawerPlaceholder.style.display = 'none';
+        
+        // Set proper aspect ratio - lock to 16:9 or similar for storyboards
+        drawerImage.style.objectFit = 'contain';
+        drawerImage.style.width = '100%';
+        drawerImage.style.height = 'auto';
+        drawerImage.style.maxHeight = '60vh';
+        
+        // Handle image load errors
+        drawerImage.onerror = function() {
+            this.style.display = 'none';
+            drawerPlaceholder.style.display = 'flex';
+        };
+    } else {
+        drawerImage.style.display = 'none';
+        drawerPlaceholder.style.display = 'flex';
+    }
+    
+    // Populate metadata - Scene Tab
+    document.getElementById('metaLocation').textContent = frame.location || '-';
+    document.getElementById('metaTimeOfDay').textContent = frame.time_of_day || '-';
+    document.getElementById('metaMood').textContent = frame.mood || '-';
+    document.getElementById('metaStoryBeat').textContent = frame.story_beat || '-';
+    document.getElementById('metaImportance').textContent = frame.importance ? `${frame.importance}/10` : '-';
+    document.getElementById('metaKeyVisual').textContent = frame.key_visual || '-';
+    document.getElementById('metaSceneDescription').textContent = frame.scene_description || '-';
+    
+    // Characters
+    const charactersEl = document.getElementById('metaCharacters');
+    if (frame.characters && frame.characters.length > 0) {
+        charactersEl.innerHTML = frame.characters.map(char => `<span class="character-tag">${char}</span>`).join('');
+    } else {
+        charactersEl.textContent = '-';
+    }
+    
+    // Populate metadata - Prompt Tab
+    document.getElementById('metaOriginalPrompt').textContent = frame.prompt || '-';
+    document.getElementById('metaUsedPrompt').textContent = frame.prompt_used || frame.prompt || '-';
+    
+    // Sanitization info
+    const sanitizationInfo = document.getElementById('sanitizationInfo');
+    const sanitizationBadge = document.getElementById('sanitizationBadge');
+    const sensitiveContentBadge = document.getElementById('sensitiveContentBadge');
+    const changesEl = document.getElementById('metaSanitizationChanges');
+    
+    if (frame.prompt_sanitized) {
+        sanitizationInfo.style.display = 'block';
+        sanitizationBadge.style.display = 'inline-block';
+        
+        if (frame.is_sensitive_content) {
+            sensitiveContentBadge.style.display = 'inline-block';
+        }
+        
+        if (frame.sanitization_changes && frame.sanitization_changes.length > 0) {
+            changesEl.innerHTML = frame.sanitization_changes.map(change => 
+                `<div class="change-item">${change}</div>`
+            ).join('');
+        } else {
+            changesEl.textContent = 'No specific changes logged';
+        }
+    } else {
+        sanitizationInfo.style.display = 'none';
+    }
+    
+    // Populate metadata - Analysis Tab
+    const cameraAngles = frame.camera_angles || [];
+    document.getElementById('metaCameraAngles').textContent = cameraAngles.length > 0 ? cameraAngles.join(', ') : '-';
+    
+    // Character analysis (enhanced with detailed character info)
+    const characterAnalysis = document.getElementById('characterAnalysis');
+    if (frame.characters && frame.characters.length > 0) {
+        // Get character database from global analysis
+        const characterDb = {{ analysis.characters|tojson }};
+        
+        characterAnalysis.innerHTML = frame.characters.map(charName => {
+            const charInfo = characterDb[charName];
+            let charDetails = `<strong>${charName}</strong>`;
+            
+            if (charInfo && typeof charInfo === 'object') {
+                const details = [];
+                if (charInfo.age_group) details.push(`Age: ${charInfo.age_group}`);
+                if (charInfo.build) details.push(`Build: ${charInfo.build}`);
+                if (charInfo.distinctive_features) details.push(`Features: ${charInfo.distinctive_features}`);
+                if (charInfo.clothing) details.push(`Clothing: ${charInfo.clothing}`);
+                if (charInfo.props) details.push(`Props: ${charInfo.props}`);
+                
+                if (details.length > 0) {
+                    charDetails += `<div class="character-details">${details.join(' • ')}</div>`;
+                }
+            } else {
+                charDetails += '<div class="character-note">Main character in scene</div>';
+            }
+            
+            return `<div class="character-analysis-item">${charDetails}</div>`;
+        }).join('');
+    } else {
+        characterAnalysis.textContent = '-';
+    }
+    
+    // Props (placeholder for future enhancement)
+    document.getElementById('metaProps').textContent = '-';
+    
+    // Populate metadata - Technical Tab
+    document.getElementById('metaFrameId').textContent = frame.frame_id || '-';
+    document.getElementById('metaGenerationTime').textContent = frame.generation_time ? 
+        new Date(frame.generation_time).toLocaleString() : '-';
+    document.getElementById('metaCost').textContent = frame.cost ? `$${frame.cost.toFixed(3)}` : '-';
+    document.getElementById('metaStatus').textContent = frame.status || '-';
+    
+    // Image technical details
+    if (frame.image_url) {
+        if (frame.image_url.startsWith('data:image')) {
+            document.getElementById('metaImageFormat').textContent = 'Base64 PNG';
+            document.getElementById('metaImageSize').textContent = `${Math.round(frame.image_url.length / 1024)}KB`;
+        } else {
+            document.getElementById('metaImageFormat').textContent = 'External URL';
+            document.getElementById('metaImageSize').textContent = 'Unknown';
+        }
+    } else {
+        document.getElementById('metaImageFormat').textContent = '-';
+        document.getElementById('metaImageSize').textContent = '-';
+    }
+}
+
+function showTab(tabName) {
+    // Hide all tab panes
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Show selected tab pane
+    document.getElementById(tabName + '-tab').classList.add('active');
+    
+    // Add active class to selected tab button
+    event.target.classList.add('active');
+}
+
+function printStoryboard() {
+    window.location.href = `/print/{{ project.id }}`;
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeFrameDrawer();
+    } else if (e.key === 'ArrowLeft' && document.getElementById('frameDrawer').classList.contains('open')) {
+        // Previous frame
+        if (currentFrameIndex > 0) {
+            currentFrameIndex--;
+            populateFrameDrawer(frames[currentFrameIndex]);
+        }
+    } else if (e.key === 'ArrowRight' && document.getElementById('frameDrawer').classList.contains('open')) {
+        // Next frame
+        if (currentFrameIndex < frames.length - 1) {
+            currentFrameIndex++;
+            populateFrameDrawer(frames[currentFrameIndex]);
+        }
+    }
+});
+</script>
+
+<style>
+/* Frame Drawer Styles */
+.frame-drawer {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    height: 100vh;
+    z-index: 1000;
+    transition: right 0.3s ease;
+}
+
+.frame-drawer.open {
+    right: 0;
+}
+
+.drawer-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.drawer-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80%;
+    max-width: 1200px;
+    height: 100vh;
+    background: white;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.drawer-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.drawer-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.drawer-close:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 0;
+}
+
+.drawer-image-section {
+    padding: 2rem;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.full-frame-container {
+    width: 100%;
+    max-width: 800px;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.full-frame-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    max-height: 70vh;
+}
+
+.drawer-placeholder {
+    width: 100%;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f9fafb;
+    color: #6b7280;
+}
+
+.drawer-metadata-section {
+    background: white;
+    border-left: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+}
+
+.metadata-tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 1rem 0.5rem;
+    border: none;
+    background: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.tab-button:hover {
+    color: #374151;
+    background: #f3f4f6;
+}
+
+.tab-button.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+    background: white;
+}
+
+.tab-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.tab-pane {
+    display: none;
+    padding: 1.5rem;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.metadata-group {
+    margin-bottom: 2rem;
+}
+
+.metadata-group h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+}
+
+.metadata-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+    gap: 1rem;
+}
+
+.metadata-item label {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.875rem;
+    min-width: 80px;
+}
+
+.metadata-item span {
+    color: #1f2937;
+    font-size: 0.875rem;
+    text-align: right;
+    flex: 1;
+}
+
+.description-text, .prompt-text {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #374151;
+}
+
+.characters-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.character-tag {
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.sanitization-badge {
+    margin-bottom: 1rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.badge:not(.sensitive) {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge.sensitive {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.changes-list {
+    background: #fffbeb;
+    border: 1px solid #fbbf24;
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+.change-item {
+    font-size: 0.875rem;
+    color: #92400e;
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+    position: relative;
+}
+
+.change-item:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #f59e0b;
+}
+
+.character-analysis-item {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+}
+
+.character-note {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+.character-details {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    line-height: 1.4;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border-radius: 0.25rem;
+    border-left: 3px solid #3b82f6;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .drawer-content {
+        width: 90%;
+    }
+    
+    .drawer-body {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+    }
+    
+    .drawer-image-section {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .drawer-content {
+        width: 100%;
+    }
+    
+    .tab-button {
+        font-size: 0.75rem;
+        padding: 0.75rem 0.25rem;
+    }
+}
+
+/* Fix frame image aspect ratio in gallery */
+.frame-image-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background: #f3f4f6;
+}
+
+.frame-image {
+    object-fit: contain !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.frame-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f9fafb;
+    color: #6b7280;
+}
+
+/* Enhanced Character Display */
+.character-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s;
+}
+
+.character-card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.character-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.75rem;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 0.5rem;
+}
+
+.char-detail {
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: #374151;
+}
+
+.char-detail strong {
+    color: #1f2937;
+    font-weight: 500;
+    display: inline-block;
+    min-width: 80px;
+}
+
+.characters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+</style>
+{% endblock %}

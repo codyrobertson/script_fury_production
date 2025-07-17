@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Fury - Professional Storyboard Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Anonymous+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Script Fury Main App Design System */
+        :root {
+            /* Japanese-inspired color palette */
+            --ash-50: #f9f9f9;
+            --ash-100: #f3f3f3;
+            --ash-200: #e8e8e8;
+            --ash-300: #d4d4d4;
+            --ash-400: #a3a3a3;
+            --ash-500: #737373;
+            --ash-600: #525252;
+            --ash-700: #404040;
+            --ash-800: #262626;
+            --ash-900: #171717;
+
+            --charcoal-50: #f6f6f6;
+            --charcoal-100: #eeeeee;
+            --charcoal-200: #dcdcdc;
+            --charcoal-300: #bdbdbd;
+            --charcoal-400: #8d8d8d;
+            --charcoal-500: #5c5c5c;
+            --charcoal-600: #4a4a4a;
+            --charcoal-700: #3d3d3d;
+            --charcoal-800: #2a2a2a;
+            --charcoal-900: #1a1a1a;
+
+            --sage-50: #f7f9f7;
+            --sage-100: #eef3ee;
+            --sage-200: #d5e2d5;
+            --sage-300: #aac5aa;
+            --sage-400: #7da17d;
+            --sage-500: #5a7f5a;
+            --sage-600: #476447;
+            --sage-700: #3d523d;
+            --sage-800: #2d3e2d;
+            --sage-900: #1f2a1f;
+
+            --moss-50: #f5f7f5;
+            --moss-100: #e9ede9;
+            --moss-200: #d1dbd1;
+            --moss-300: #a9c0a9;
+            --moss-400: #7a9e7a;
+            --moss-500: #4f6f4f;
+            --moss-600: #3e5a3e;
+            --moss-700: #344a34;
+            --moss-800: #2a3a2a;
+            --moss-900: #232f23;
+
+            --sky-50: #f0f6ff;
+            --sky-100: #e0ecff;
+            --sky-200: #b9d7ff;
+            --sky-300: #7ab8ff;
+            --sky-400: #6485ff;
+            --sky-500: #4c68d9;
+            --sky-600: #3c52b3;
+            --sky-700: #2f3f8a;
+            --sky-800: #2e3a73;
+            --sky-900: #1e2447;
+
+            --mist-50: #f8fafc;
+            --mist-100: #f1f5f9;
+            --mist-200: #e2e8f0;
+            --mist-300: #cbd5e1;
+            --mist-400: #94a3b8;
+            --mist-500: #64748b;
+            --mist-600: #475569;
+            --mist-700: #334155;
+            --mist-800: #1e293b;
+            --mist-900: #0f172a;
+
+            /* Theme colors */
+            --primary: var(--sky-500);
+            --primary-foreground: white;
+            --secondary: var(--ash-100);
+            --secondary-foreground: var(--ash-800);
+            --background: var(--ash-50);
+            --foreground: var(--charcoal-800);
+            --muted: var(--ash-100);
+            --muted-foreground: var(--ash-600);
+            --accent: var(--moss-500);
+            --accent-foreground: white;
+            --border: var(--ash-200);
+            --ring: var(--sky-300);
+
+            /* Spacing & sizing */
+            --radius: 0.625rem;
+            --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--foreground);
+            text-decoration: none;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 1.75rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--muted-foreground);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--foreground);
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--foreground);
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--muted-foreground);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Upload Card */
+        .upload-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: 3rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, var(--mist-50) 0%, var(--sky-50) 100%);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-description {
+            color: var(--muted-foreground);
+            font-size: 1rem;
+        }
+
+        .card-content {
+            padding: 2rem;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background: var(--mist-50);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: var(--sky-50);
+            transform: translateY(-1px);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--primary);
+            background: var(--sky-50);
+            border-style: solid;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .upload-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: var(--muted-foreground);
+            margin-bottom: 1.5rem;
+        }
+
+        .file-types {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .file-type {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+            padding: 0.5rem 1rem;
+            border-radius: calc(var(--radius) * 0.8);
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid var(--border);
+        }
+
+        /* Progress */
+        .progress-section {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .progress-bar {
+            background: var(--muted);
+            border-radius: var(--radius);
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            color: var(--muted-foreground);
+            font-weight: 500;
+        }
+
+        /* Features Grid */
+        .features-section {
+            margin-top: 4rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--foreground);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: var(--muted-foreground);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .btn-primary:hover {
+            background: var(--sky-600);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--ash-200);
+        }
+
+        /* Hidden input */
+        #fileInput {
+            display: none;
+        }
+
+        /* Session Recovery Notice */
+        .session-notice {
+            background: var(--sky-50);
+            border: 1px solid var(--sky-200);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .session-notice.show {
+            display: block;
+        }
+
+        .notice-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .notice-icon {
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        .notice-text {
+            flex: 1;
+            color: var(--sky-800);
+        }
+
+        .notice-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 2rem 1rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .upload-zone {
+                padding: 2rem 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+
+        /* Animations */
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .animate-fade-in-delay-1 {
+            animation: fadeIn 0.6s ease-out 0.1s both;
+        }
+
+        .animate-fade-in-delay-2 {
+            animation: fadeIn 0.6s ease-out 0.2s both;
+        }
+
+        .animate-fade-in-delay-3 {
+            animation: fadeIn 0.6s ease-out 0.3s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <a href="/" class="logo">
+                <i class="fas fa-film"></i>
+                Script Fury
+            </a>
+            <nav class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#pricing" class="nav-link">Pricing</a>
+                <a href="#help" class="nav-link">Help</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Session Recovery Notice -->
+        <div class="session-notice" id="sessionNotice">
+            <div class="notice-content">
+                <i class="fas fa-history notice-icon"></i>
+                <div class="notice-text">
+                    <strong>Session Recovered!</strong> We found your previous work. Would you like to continue?
+                </div>
+                <div class="notice-actions">
+                    <button class="btn btn-primary" onclick="recoverSession()">Continue</button>
+                    <button class="btn btn-secondary" onclick="clearSession()">Start Fresh</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero Section -->
+        <section class="hero-section animate-fade-in">
+            <h1 class="hero-title">Transform Screenplays into Professional Storyboards</h1>
+            <p class="hero-subtitle">
+                AI-powered storyboard generation that converts your screenplay into clean, 
+                consistent frames using professional animation studio standards.
+            </p>
+            
+            <div class="hero-stats animate-fade-in-delay-1">
+                <div class="stat-item">
+                    <span class="stat-number">2-3</span>
+                    <span class="stat-label">Minutes</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">$0.02</span>
+                    <span class="stat-label">Per Frame</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Professional</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upload Card -->
+        <section class="upload-card animate-fade-in-delay-2">
+            <div class="card-header">
+                <h2 class="card-title">Upload Your Screenplay</h2>
+                <p class="card-description">Drag & drop your script file or click to browse. Supports PDF, TXT, and Fountain formats.</p>
+            </div>
+            
+            <div class="card-content">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="upload-zone" id="uploadZone">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <div class="upload-text">Drop your screenplay here</div>
+                        <div class="upload-hint">or click to select a file from your computer</div>
+                        
+                        <div class="file-types">
+                            <span class="file-type">PDF</span>
+                            <span class="file-type">TXT</span>
+                            <span class="file-type">FOUNTAIN</span>
+                        </div>
+                        
+                        <input type="file" id="fileInput" name="file" accept=".pdf,.txt,.fountain" required>
+                    </div>
+                </form>
+
+                <!-- Progress Section -->
+                <div class="progress-section" id="progressSection">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Uploading...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features-section animate-fade-in-delay-3">
+            <h2 class="section-title">Professional Storyboard Generation</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3 class="feature-title">AI-Powered Analysis</h3>
+                    <p class="feature-description">
+                        Advanced AI analyzes your screenplay structure, extracts visual elements, 
+                        and identifies optimal scenes for storyboarding.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3 class="feature-title">Professional Styles</h3>
+                    <p class="feature-description">
+                        Choose from animation studio styles including classic storyboard, 
+                        cinematic framing, sketch, and comic book aesthetics.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="feature-title">Lightning Fast</h3>
+                    <p class="feature-description">
+                        Generate complete storyboards in minutes, not hours. 
+                        Perfect for rapid prototyping and client presentations.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // localStorage Cache Manager
+        class SessionCache {
+            constructor() {
+                this.keys = {
+                    SCREENPLAY_TEXT: 'sf_screenplay_text',
+                    UPLOADED_FILENAME: 'sf_uploaded_filename', 
+                    SCREENPLAY_ANALYSIS: 'sf_screenplay_analysis',
+                    CURRENT_PROJECT_ID: 'sf_current_project_id',
+                    UPLOAD_TIMESTAMP: 'sf_upload_timestamp'
+                };
+            }
+
+            save(key, data) {
+                try {
+                    localStorage.setItem(key, JSON.stringify({
+                        data: data,
+                        timestamp: Date.now()
+                    }));
+                } catch (e) {
+                    console.warn('Failed to save to localStorage:', e);
+                }
+            }
+
+            load(key) {
+                try {
+                    const item = localStorage.getItem(key);
+                    if (!item) return null;
+                    
+                    const parsed = JSON.parse(item);
+                    // Check if data is less than 24 hours old
+                    if (Date.now() - parsed.timestamp > 24 * 60 * 60 * 1000) {
+                        this.remove(key);
+                        return null;
+                    }
+                    return parsed.data;
+                } catch (e) {
+                    console.warn('Failed to load from localStorage:', e);
+                    return null;
+                }
+            }
+
+            remove(key) {
+                localStorage.removeItem(key);
+            }
+
+            clear() {
+                // Clear base keys
+                Object.values(this.keys).forEach(key => {
+                    this.remove(key);
+                });
+                
+                // Clear all project-specific frame caches
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('sf_generated_frames_')) {
+                        localStorage.removeItem(key);
+                        console.log(`🧹 Cleared project frames cache: ${key}`);
+                    }
+                }
+            }
+
+            hasData() {
+                return !!(this.load(this.keys.CURRENT_PROJECT_ID) || 
+                         this.load(this.keys.SCREENPLAY_TEXT));
+            }
+
+            getProjectId() {
+                return this.load(this.keys.CURRENT_PROJECT_ID);
+            }
+
+            saveProject(projectId, filename, analysis) {
+                this.save(this.keys.CURRENT_PROJECT_ID, projectId);
+                this.save(this.keys.UPLOADED_FILENAME, filename);
+                if (analysis) {
+                    this.save(this.keys.SCREENPLAY_ANALYSIS, analysis);
+                }
+                this.save(this.keys.UPLOAD_TIMESTAMP, Date.now());
+            }
+        }
+
+        // Initialize session cache
+        const sessionCache = new SessionCache();
+
+        // DOM elements
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const progressSection = document.getElementById('progressSection');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const sessionNotice = document.getElementById('sessionNotice');
+
+        // Check for existing session on load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (sessionCache.hasData()) {
+                sessionNotice.classList.add('show');
+            }
+        });
+
+        // Session recovery functions
+        window.recoverSession = function() {
+            const projectId = sessionCache.getProjectId();
+            console.log('🔄 Attempting to recover session with project ID:', projectId);
+            
+            if (projectId) {
+                // Test if project still exists on server before redirecting
+                fetch(`/generate/${projectId}`)
+                    .then(response => {
+                        if (response.ok) {
+                            console.log('✅ Project found on server, redirecting...');
+                            window.location.href = `/generate/${projectId}`;
+                        } else {
+                            console.log('❌ Project not found on server, clearing invalid cache');
+                            alert('Previous session expired. Starting fresh.');
+                            clearSession();
+                        }
+                    })
+                    .catch(error => {
+                        console.log('❌ Error checking project:', error);
+                        alert('Could not recover session. Starting fresh.');
+                        clearSession();
+                    });
+            } else {
+                console.log('❌ No project ID found in cache');
+                clearSession();
+            }
+        };
+
+        window.clearSession = function() {
+            sessionCache.clear();
+            sessionNotice.classList.remove('show');
+        };
+
+        // Upload functionality
+        uploadZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleUpload(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleUpload(e.target.files[0]);
+            }
+        });
+
+        function handleUpload(file) {
+            // CRITICAL FIX: Clear all previous session data to prevent cross-project contamination
+            sessionCache.clear();
+            console.log('🧹 Cleared previous session data for new upload');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show progress
+            progressSection.style.display = 'block';
+            uploadZone.style.opacity = '0.6';
+            uploadZone.style.pointerEvents = 'none';
+
+            // Animate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+            }, 200);
+
+            // Upload file
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                
+                if (data.success) {
+                    progressText.innerHTML = `
+                        <span style="color: var(--accent);">
+                            <i class="fas fa-check-circle"></i>
+                            Upload successful! ${data.detected_scenes} scenes detected
+                        </span>
+                    `;
+                    
+                    // Save to session cache
+                    sessionCache.saveProject(data.project_id, data.filename, null);
+                    
+                    setTimeout(() => {
+                        window.location.href = `/generate/${data.project_id}`;
+                    }, 1500);
+                } else {
+                    progressText.innerHTML = `
+                        <span style="color: var(--danger);">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Upload failed: ${data.error}
+                        </span>
+                    `;
+                    setTimeout(resetUpload, 3000);
+                }
+            })
+            .catch(error => {
+                clearInterval(progressInterval);
+                progressText.innerHTML = `
+                    <span style="color: var(--danger);">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Upload failed: ${error.message}
+                    </span>
+                `;
+                setTimeout(resetUpload, 3000);
+            });
+        }
+
+        function resetUpload() {
+            progressSection.style.display = 'none';
+            uploadZone.style.opacity = '1';
+            uploadZone.style.pointerEvents = 'auto';
+            progressFill.style.width = '0%';
+        }
+    </script>
+</body>
+</html>

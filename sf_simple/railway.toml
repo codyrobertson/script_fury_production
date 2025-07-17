@@ -1,0 +1,25 @@
+# Railway deployment configuration
+version: 2
+
+build:
+  builder: NIXPACKS
+
+deploy:
+  startCommand: python app.py
+  healthcheckPath: /health
+  restartPolicyType: ON_FAILURE
+  restartPolicyMaxRetries: 10
+
+environments:
+  production:
+    variables:
+      FLASK_ENV: production
+      PORT: ${{ PORT }}
+      MODEL_MODE: balanced
+      CHARACTER_MODEL: gpt-4o
+      SCENE_MODEL: gpt-4o
+      SANITIZATION_MODEL: o3-mini
+      INFO_MODEL: gpt-4o-mini
+      FALLBACK_MODEL: gpt-4o-mini
+      IMAGE_MODEL: gpt-image-1
+      DEFAULT_MODEL: gpt-4o-mini

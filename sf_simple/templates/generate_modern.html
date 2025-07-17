@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Storyboard - Script Fury</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Modern Design System */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --radius: 0.75rem;
+            --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo i {
+            background: white;
+            color: var(--primary);
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Project Info */
+        .project-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat {
+            background: var(--gray-100);
+            color: var(--gray-600);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .detection-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius);
+        }
+
+        .detection-badge {
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Style Selection */
+        .styles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .style-card {
+            border: 3px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .style-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .style-card.active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .style-preview {
+            width: 100%;
+            height: 120px;
+            background: var(--gray-100);
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .style-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .style-preview::before {
+            content: '🎨';
+            font-size: 2rem;
+            color: var(--gray-400);
+        }
+
+        .style-info h4 {
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .style-info p {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+
+        /* Settings */
+        .setting-item {
+            padding: 1.5rem;
+            background: var(--gray-50);
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+
+        .setting-item h4 {
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .auto-detect-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .setting-note {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Preview Section */
+        .preview-section {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .preview-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius);
+        }
+
+        .preview-label {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .preview-value {
+            color: var(--gray-800);
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray-700);
+            border: 2px solid var(--gray-200);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        /* Progress */
+        .generation-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .progress-content {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 3rem;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .progress-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .progress-bar {
+            background: var(--gray-200);
+            border-radius: 1rem;
+            height: 8px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .styles-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* Animation utilities */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header fade-in">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                Script Fury
+            </div>
+            <div>Configure Your Storyboard Generation</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content fade-in">
+            <!-- Project Info -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Project Details</h2>
+                </div>
+                <div class="card-body">
+                    <h3>{{ project.filename }}</h3>
+                    <div class="project-stats">
+                        <span class="stat">{{ project.word_count }} words</span>
+                        <span class="stat">{{ project.char_count }} characters</span>
+                    </div>
+                    
+                    <div class="detection-info">
+                        <div class="detection-badge">
+                            <i class="fas fa-robot"></i>
+                            AI Detected
+                        </div>
+                        <div>
+                            <strong>{{ project.detected_scenes }}</strong> scenes found
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Style Selection -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Choose Style</h2>
+                    <p>Select your preferred storyboard style</p>
+                </div>
+                <div class="card-body">
+                    <div class="styles-grid">
+                        {% for style_key, style_info in styles.items() %}
+                        <div class="style-card" data-style="{{ style_key }}">
+                            <div class="style-preview">
+                                <!-- Style preview will be styled with CSS -->
+                            </div>
+                            <div class="style-info">
+                                <h4>{{ style_info.name }}</h4>
+                                <p>{{ style_info.description }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings & Preview -->
+        <div class="preview-section fade-in">
+            <div class="card-header">
+                <h2>Generation Settings</h2>
+                <p>AI-powered intelligent scene and frame detection</p>
+            </div>
+            <div class="card-body">
+                <div class="setting-item">
+                    <h4>Scene Detection</h4>
+                    <div class="auto-detect-badge">
+                        <i class="fas fa-brain"></i>
+                        Automatic Algorithm
+                    </div>
+                    <p>Using industry-standard algorithms to detect optimal scene count based on screenplay structure and pacing.</p>
+                    <p class="setting-note">Matches professional storyboard industry standards</p>
+                </div>
+
+                <div class="setting-item">
+                    <h4>Frame Generation</h4>
+                    <div class="auto-detect-badge">
+                        <i class="fas fa-magic"></i>
+                        AI-Powered Selection
+                    </div>
+                    <p>Intelligent frame selection based on visual complexity, story importance, and cinematic impact.</p>
+                    <p class="setting-note">Key story moments automatically prioritized</p>
+                </div>
+
+                <!-- Preview Grid -->
+                <div class="preview-grid">
+                    <div class="preview-item">
+                        <span class="preview-label">Detected Scenes:</span>
+                        <span class="preview-value">{{ project.detected_scenes }}</span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Frame Strategy:</span>
+                        <span class="preview-value">Algorithm-based</span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Estimation:</span>
+                        <span class="preview-value">Varies by complexity</span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Selected Style:</span>
+                        <span class="preview-value" id="selected-style">None selected</span>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="/" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Upload
+                    </a>
+                    <button class="btn" id="generate-btn" disabled>
+                        <i class="fas fa-magic"></i>
+                        Generate Storyboard
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Modal -->
+        <div class="generation-progress" id="generation-progress" style="display: none;">
+            <div class="progress-content">
+                <div class="progress-icon">⚡</div>
+                <h3>Starting Generation...</h3>
+                <p>AI is analyzing your screenplay and generating frames</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <p id="progress-text">Initializing...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const projectId = '{{ project.id }}';
+            let selectedStyle = null;
+            
+            // Style selection
+            const styleCards = document.querySelectorAll('.style-card');
+            const generateBtn = document.getElementById('generate-btn');
+            const selectedStyleSpan = document.getElementById('selected-style');
+            
+            styleCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // Remove active class from all cards
+                    styleCards.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked card
+                    card.classList.add('active');
+                    
+                    // Update selected style
+                    selectedStyle = card.dataset.style;
+                    const styleName = card.querySelector('h4').textContent;
+                    selectedStyleSpan.textContent = styleName;
+                    
+                    // Enable generate button
+                    generateBtn.disabled = false;
+                });
+            });
+            
+            // Generate button handler
+            generateBtn.addEventListener('click', () => {
+                if (!selectedStyle) {
+                    alert('Please select a style first');
+                    return;
+                }
+                
+                startGeneration();
+            });
+            
+            function startGeneration() {
+                // Show progress
+                document.getElementById('generation-progress').style.display = 'flex';
+                
+                // Start generation
+                fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        project_id: projectId,
+                        style: selectedStyle
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Redirect to processing page
+                        window.location.href = `/processing/${projectId}`;
+                    } else {
+                        alert('Generation failed: ' + (data.error || 'Unknown error'));
+                        document.getElementById('generation-progress').style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Generation error:', error);
+                    alert('Generation failed. Please try again.');
+                    document.getElementById('generation-progress').style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

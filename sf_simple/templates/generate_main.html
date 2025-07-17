@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure Generation - Script Fury</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Anonymous+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Script Fury Main App Design System */
+        :root {
+            /* Japanese-inspired color palette */
+            --ash-50: #f9f9f9;
+            --ash-100: #f3f3f3;
+            --ash-200: #e8e8e8;
+            --ash-300: #d4d4d4;
+            --ash-400: #a3a3a3;
+            --ash-500: #737373;
+            --ash-600: #525252;
+            --ash-700: #404040;
+            --ash-800: #262626;
+            --ash-900: #171717;
+
+            --charcoal-50: #f6f6f6;
+            --charcoal-100: #eeeeee;
+            --charcoal-200: #dcdcdc;
+            --charcoal-300: #bdbdbd;
+            --charcoal-400: #8d8d8d;
+            --charcoal-500: #5c5c5c;
+            --charcoal-600: #4a4a4a;
+            --charcoal-700: #3d3d3d;
+            --charcoal-800: #2a2a2a;
+            --charcoal-900: #1a1a1a;
+
+            --moss-50: #f5f7f5;
+            --moss-100: #e9ede9;
+            --moss-200: #d1dbd1;
+            --moss-300: #a9c0a9;
+            --moss-400: #7a9e7a;
+            --moss-500: #4f6f4f;
+            --moss-600: #3e5a3e;
+            --moss-700: #344a34;
+            --moss-800: #2a3a2a;
+            --moss-900: #232f23;
+
+            --sky-50: #f0f6ff;
+            --sky-100: #e0ecff;
+            --sky-200: #b9d7ff;
+            --sky-300: #7ab8ff;
+            --sky-400: #6485ff;
+            --sky-500: #4c68d9;
+            --sky-600: #3c52b3;
+            --sky-700: #2f3f8a;
+            --sky-800: #2e3a73;
+            --sky-900: #1e2447;
+
+            --mist-50: #f8fafc;
+            --mist-100: #f1f5f9;
+            --mist-200: #e2e8f0;
+            --mist-300: #cbd5e1;
+            --mist-400: #94a3b8;
+            --mist-500: #64748b;
+            --mist-600: #475569;
+            --mist-700: #334155;
+            --mist-800: #1e293b;
+            --mist-900: #0f172a;
+
+            /* Theme colors */
+            --primary: var(--sky-500);
+            --primary-foreground: white;
+            --secondary: var(--ash-100);
+            --secondary-foreground: var(--ash-800);
+            --background: var(--ash-50);
+            --foreground: var(--charcoal-800);
+            --muted: var(--ash-100);
+            --muted-foreground: var(--ash-600);
+            --accent: var(--moss-500);
+            --accent-foreground: white;
+            --border: var(--ash-200);
+            --ring: var(--sky-300);
+
+            /* Spacing & sizing */
+            --radius: 0.625rem;
+            --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--foreground);
+            text-decoration: none;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 1.75rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        /* Content Area */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Project Header */
+        .project-header {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .project-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        .meta-icon {
+            color: var(--primary);
+        }
+
+        /* Style Selection */
+        .style-section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--mist-50);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-description {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        .section-content {
+            padding: 2rem;
+        }
+
+        .styles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .style-card {
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--mist-50);
+        }
+
+        .style-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .style-card.selected {
+            border-color: var(--primary);
+            background: var(--sky-50);
+            box-shadow: 0 0 0 1px var(--sky-200);
+        }
+
+        .style-preview {
+            width: 100%;
+            height: 100px;
+            background: var(--ash-100);
+            border-radius: calc(var(--radius) * 0.8);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted-foreground);
+            font-size: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .style-name {
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        .style-description {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .sidebar-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-header {
+            padding: 1rem 1.5rem;
+            background: var(--charcoal-800);
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sidebar-content {
+            padding: 1.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        .info-value {
+            color: var(--foreground);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        /* Algorithm Badges */
+        .algorithm-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--moss-50);
+            color: var(--moss-700);
+            padding: 0.5rem 1rem;
+            border-radius: calc(var(--radius) * 0.8);
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid var(--moss-200);
+            margin-top: 0.5rem;
+        }
+
+        .algorithm-icon {
+            color: var(--moss-500);
+        }
+
+        /* Generation Actions */
+        .generation-actions {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            margin-top: auto;
+        }
+
+        .actions-grid {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 0.875rem;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--sky-600);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--ash-200);
+        }
+
+        /* Progress Modal */
+        .progress-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .progress-content {
+            background: white;
+            border-radius: var(--radius);
+            padding: 3rem;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .progress-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .progress-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-subtitle {
+            color: var(--muted-foreground);
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            background: var(--muted);
+            border-radius: var(--radius);
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+
+            .styles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-grid {
+                flex-direction: column;
+            }
+
+            .project-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Animations */
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .animate-fade-in-delay-1 {
+            animation: fadeIn 0.6s ease-out 0.1s both;
+        }
+
+        .animate-fade-in-delay-2 {
+            animation: fadeIn 0.6s ease-out 0.2s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <a href="/" class="logo">
+                <i class="fas fa-film"></i>
+                Script Fury
+            </a>
+            <div class="breadcrumb">
+                <a href="/">Upload</a>
+                <i class="fas fa-chevron-right"></i>
+                <span>Configure</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Project Header -->
+            <section class="project-header animate-fade-in">
+                <h1 class="project-title">{{ project.filename }}</h1>
+                
+                <div class="project-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-file-alt meta-icon"></i>
+                        <span>{{ project.word_count }} words</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-clock meta-icon"></i>
+                        <span>{{ project.detected_scenes }} scenes detected</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-magic meta-icon"></i>
+                        <span>AI-powered analysis</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Style Selection -->
+            <section class="style-section animate-fade-in-delay-1">
+                <div class="section-header">
+                    <h2 class="section-title">Choose Visual Style</h2>
+                    <p class="section-description">Select the storyboard style that best matches your creative vision</p>
+                </div>
+                
+                <div class="section-content">
+                    <div class="styles-grid">
+                        {% for style_key, style_info in styles.items() %}
+                        <div class="style-card" data-style="{{ style_key }}">
+                            <div class="style-preview">
+                                <img src="{{ url_for('static', filename='images/style-previews/' + style_key + '.jpg') }}" 
+                                     alt="{{ style_info.name }} preview" 
+                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: calc(var(--radius) * 0.6);">
+                            </div>
+                            <div class="style-name">{{ style_info.name }}</div>
+                            <div class="style-description">{{ style_info.description }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            <!-- Generation Actions -->
+            <section class="generation-actions animate-fade-in-delay-2">
+                <div class="actions-grid">
+                    <a href="/" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Upload
+                    </a>
+                    <button class="btn btn-primary" id="generateBtn" disabled>
+                        <i class="fas fa-magic"></i>
+                        Generate Storyboard
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Project Details -->
+            <div class="sidebar-card animate-fade-in-delay-1">
+                <div class="sidebar-header">
+                    <i class="fas fa-info-circle"></i>
+                    Project Details
+                </div>
+                <div class="sidebar-content">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Filename</span>
+                            <span class="info-value">{{ project.filename }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Word Count</span>
+                            <span class="info-value">{{ project.word_count }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Characters</span>
+                            <span class="info-value">{{ project.char_count }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Uploaded</span>
+                            <span class="info-value">Just now</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene Analysis -->
+            <div class="sidebar-card animate-fade-in-delay-2">
+                <div class="sidebar-header">
+                    <i class="fas fa-chart-bar"></i>
+                    Scene Analysis
+                </div>
+                <div class="sidebar-content">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Detected Scenes</span>
+                            <span class="info-value">{{ project.detected_scenes }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Frame Strategy</span>
+                            <span class="info-value">Algorithm-based</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Estimated Cost</span>
+                            <span class="info-value">$0.40 - $1.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="algorithm-badge">
+                        <i class="fas fa-brain algorithm-icon"></i>
+                        Industry Standard Algorithm
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Style -->
+            <div class="sidebar-card" id="selectedStyleCard" style="display: none;">
+                <div class="sidebar-header">
+                    <i class="fas fa-palette"></i>
+                    Selected Style
+                </div>
+                <div class="sidebar-content">
+                    <div id="selectedStyleInfo">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Progress Modal -->
+    <div class="progress-modal" id="progressModal">
+        <div class="progress-content">
+            <div class="progress-icon">
+                <i class="fas fa-magic"></i>
+            </div>
+            <h3 class="progress-title">Starting Generation</h3>
+            <p class="progress-subtitle">Analyzing screenplay and preparing frames...</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // localStorage Cache Manager
+        class SessionCache {
+            constructor() {
+                this.keys = {
+                    SCREENPLAY_TEXT: 'sf_screenplay_text',
+                    UPLOADED_FILENAME: 'sf_uploaded_filename', 
+                    SCREENPLAY_ANALYSIS: 'sf_screenplay_analysis',
+                    CURRENT_PROJECT_ID: 'sf_current_project_id',
+                    SELECTED_STYLE: 'sf_selected_style',
+                    GENERATION_CONFIG: 'sf_generation_config'
+                };
+            }
+
+            save(key, data) {
+                try {
+                    localStorage.setItem(key, JSON.stringify({
+                        data: data,
+                        timestamp: Date.now()
+                    }));
+                } catch (e) {
+                    console.warn('Failed to save to localStorage:', e);
+                }
+            }
+
+            load(key) {
+                try {
+                    const item = localStorage.getItem(key);
+                    if (!item) return null;
+                    
+                    const parsed = JSON.parse(item);
+                    return parsed.data;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            remove(key) {
+                localStorage.removeItem(key);
+            }
+        }
+
+        // Initialize
+        const sessionCache = new SessionCache();
+        let projectId = '{{ project.id }}';
+        
+        // DEBUG: Check if projectId is valid, fallback to URL if needed
+        if (!projectId || projectId === 'None' || projectId === '') {
+            // Extract from URL path: /generate/PROJECT_ID
+            const pathParts = window.location.pathname.split('/');
+            projectId = pathParts[pathParts.length - 1];
+            console.warn('⚠️ ProjectID from template was invalid, extracted from URL:', projectId);
+        } else {
+            console.log('✅ ProjectID from template:', projectId);
+        }
+        
+        let selectedStyle = null;
+
+        // DOM elements
+        const styleCards = document.querySelectorAll('.style-card');
+        const generateBtn = document.getElementById('generateBtn');
+        const progressModal = document.getElementById('progressModal');
+        const progressFill = document.getElementById('progressFill');
+        const selectedStyleCard = document.getElementById('selectedStyleCard');
+        const selectedStyleInfo = document.getElementById('selectedStyleInfo');
+
+        // Load saved style
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedStyle = sessionCache.load(sessionCache.keys.SELECTED_STYLE);
+            if (savedStyle) {
+                selectStyle(savedStyle);
+            }
+        });
+
+        // Style selection
+        styleCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const style = card.dataset.style;
+                selectStyle(style);
+            });
+        });
+
+        function selectStyle(style) {
+            selectedStyle = style;
+            
+            // Update UI
+            styleCards.forEach(c => c.classList.remove('selected'));
+            document.querySelector(`[data-style="${style}"]`).classList.add('selected');
+            
+            // Enable generate button
+            generateBtn.disabled = false;
+            
+            // Update sidebar
+            const styleInfo = {
+                'classic': { name: 'Classic Storyboard', description: 'Traditional black and white line art' },
+                'cinematic': { name: 'Cinematic', description: 'Film-style composition and framing' },
+                'sketch': { name: 'Sketch Style', description: 'Hand-drawn sketch appearance' },
+                'comic': { name: 'Comic Book', description: 'Comic book panel style' }
+            };
+            
+            const info = styleInfo[style];
+            selectedStyleInfo.innerHTML = `
+                <div class="info-item">
+                    <span class="info-label">Style</span>
+                    <span class="info-value">${info.name}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Type</span>
+                    <span class="info-value">${info.description}</span>
+                </div>
+            `;
+            selectedStyleCard.style.display = 'block';
+            
+            // Save to cache
+            sessionCache.save(sessionCache.keys.SELECTED_STYLE, style);
+        }
+
+        // Generate button handler
+        generateBtn.addEventListener('click', () => {
+            if (!selectedStyle) {
+                alert('Please select a style first');
+                return;
+            }
+            
+            startGeneration();
+        });
+
+        function startGeneration() {
+            console.log('🚀 Starting generation with projectId:', projectId, 'style:', selectedStyle);
+            
+            // Validate projectId before proceeding
+            if (!projectId || projectId === 'None') {
+                alert('Error: Invalid project ID. Please try uploading again.');
+                return;
+            }
+            
+            // Show progress modal
+            progressModal.style.display = 'flex';
+            
+            // Save generation config
+            sessionCache.save(sessionCache.keys.GENERATION_CONFIG, {
+                projectId: projectId,
+                style: selectedStyle,
+                timestamp: Date.now()
+            });
+            
+            // Start generation
+            console.log('📡 Sending generation request...');
+            fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    project_id: projectId,
+                    style: selectedStyle
+                })
+            })
+            .then(response => {
+                console.log('📨 Generation response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('📋 Generation response data:', data);
+                if (data.success) {
+                    console.log('✅ Generation started, redirecting to:', `/processing/${projectId}`);
+                    // Redirect to processing page
+                    window.location.href = `/processing/${projectId}`;
+                } else {
+                    alert('Generation failed: ' + (data.error || 'Unknown error'));
+                    progressModal.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('❌ Generation error:', error);
+                alert('Generation failed. Please try again.');
+                progressModal.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>

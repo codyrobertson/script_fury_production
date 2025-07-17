@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Storyboard Generating - {{ project.filename }}{% endblock %}
+
+{% block content %}
+<div class="storyboard-waiting">
+    <div class="waiting-content">
+        <div class="waiting-icon">⏳</div>
+        <h1>Storyboard Generating</h1>
+        <p>Your storyboard is being generated. Please wait or return to the processing page.</p>
+        
+        <div class="waiting-actions">
+            <button class="btn btn-primary" onclick="window.location.href='/processing/{{ project.id }}'">
+                ← Back to Processing
+            </button>
+            <button class="btn btn-secondary" onclick="location.reload()">
+                🔄 Refresh Page
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.storyboard-waiting {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 2rem;
+}
+
+.waiting-content {
+    text-align: center;
+    max-width: 500px;
+}
+
+.waiting-icon {
+    font-size: 4rem;
+    margin-bottom: 2rem;
+    animation: pulse 2s infinite;
+}
+
+.waiting-content h1 {
+    color: #374151;
+    margin-bottom: 1rem;
+}
+
+.waiting-content p {
+    color: #6b7280;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.waiting-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+</style>
+{% endblock %}

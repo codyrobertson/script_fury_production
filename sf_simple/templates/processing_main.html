@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generating Storyboard - Script Fury</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Anonymous+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Script Fury Main App Design System */
+        :root {
+            /* Japanese-inspired color palette */
+            --ash-50: #f9f9f9;
+            --ash-100: #f3f3f3;
+            --ash-200: #e8e8e8;
+            --ash-300: #d4d4d4;
+            --ash-400: #a3a3a3;
+            --ash-500: #737373;
+            --ash-600: #525252;
+            --ash-700: #404040;
+            --ash-800: #262626;
+            --ash-900: #171717;
+
+            --charcoal-50: #f6f6f6;
+            --charcoal-100: #eeeeee;
+            --charcoal-200: #dcdcdc;
+            --charcoal-300: #bdbdbd;
+            --charcoal-400: #8d8d8d;
+            --charcoal-500: #5c5c5c;
+            --charcoal-600: #4a4a4a;
+            --charcoal-700: #3d3d3d;
+            --charcoal-800: #2a2a2a;
+            --charcoal-900: #1a1a1a;
+
+            --moss-50: #f5f7f5;
+            --moss-100: #e9ede9;
+            --moss-200: #d1dbd1;
+            --moss-300: #a9c0a9;
+            --moss-400: #7a9e7a;
+            --moss-500: #4f6f4f;
+            --moss-600: #3e5a3e;
+            --moss-700: #344a34;
+            --moss-800: #2a3a2a;
+            --moss-900: #232f23;
+
+            --sky-50: #f0f6ff;
+            --sky-100: #e0ecff;
+            --sky-200: #b9d7ff;
+            --sky-300: #7ab8ff;
+            --sky-400: #6485ff;
+            --sky-500: #4c68d9;
+            --sky-600: #3c52b3;
+            --sky-700: #2f3f8a;
+            --sky-800: #2e3a73;
+            --sky-900: #1e2447;
+
+            --mist-50: #f8fafc;
+            --mist-100: #f1f5f9;
+            --mist-200: #e2e8f0;
+            --mist-300: #cbd5e1;
+            --mist-400: #94a3b8;
+            --mist-500: #64748b;
+            --mist-600: #475569;
+            --mist-700: #334155;
+            --mist-800: #1e293b;
+            --mist-900: #0f172a;
+
+            /* Theme colors */
+            --primary: var(--sky-500);
+            --primary-foreground: white;
+            --secondary: var(--ash-100);
+            --secondary-foreground: var(--ash-800);
+            --background: var(--ash-50);
+            --foreground: var(--charcoal-800);
+            --muted: var(--ash-100);
+            --muted-foreground: var(--ash-600);
+            --accent: var(--moss-500);
+            --accent-foreground: white;
+            --border: var(--ash-200);
+            --ring: var(--sky-300);
+            --success: var(--moss-500);
+            --warning: #f59e0b;
+            --danger: #ef4444;
+
+            /* Spacing & sizing */
+            --radius: 0.625rem;
+            --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--foreground);
+            text-decoration: none;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 1.75rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        /* Content Area */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .progress-header {
+            padding: 2rem 2rem 1rem;
+            text-align: center;
+        }
+
+        .progress-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+
+        .progress-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-subtitle {
+            color: var(--muted-foreground);
+            margin-bottom: 2rem;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .progress-bar-container {
+            padding: 0 2rem 2rem;
+        }
+
+        .progress-bar {
+            background: var(--mist-100);
+            border-radius: var(--radius);
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            color: var(--muted-foreground);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .progress-text i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Frames Section */
+        .frames-section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            display: none;
+        }
+
+        .frames-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--mist-50);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .frames-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--foreground);
+        }
+
+        .frames-content {
+            padding: 2rem;
+        }
+
+        .frames-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .frame-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .frame-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .frame-card.completed {
+            border-color: var(--success);
+            box-shadow: 0 0 0 1px var(--moss-100);
+        }
+
+        .frame-card.generating {
+            border-color: var(--warning);
+            animation: frameGeneration 2s infinite;
+        }
+
+        @keyframes frameGeneration {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .frame-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--mist-50);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .frame-title {
+            font-weight: 600;
+            color: var(--foreground);
+            font-size: 0.875rem;
+        }
+
+        .frame-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: calc(var(--radius) * 0.8);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .frame-status.completed {
+            background: var(--moss-100);
+            color: var(--moss-700);
+        }
+
+        .frame-status.generating {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .frame-image {
+            width: 100%;
+            height: 160px;
+            position: relative;
+            background: var(--ash-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .frame-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-placeholder {
+            text-align: center;
+            color: var(--muted-foreground);
+            padding: 1rem;
+        }
+
+        .placeholder-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--muted-foreground);
+        }
+
+        .frame-info {
+            padding: 1rem;
+        }
+
+        .frame-location {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .frame-description {
+            color: var(--foreground);
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .frame-characters {
+            color: var(--muted-foreground);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .sidebar-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-header {
+            padding: 1rem 1.5rem;
+            background: var(--charcoal-800);
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sidebar-content {
+            padding: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        .info-value {
+            color: var(--foreground);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        /* Characters List */
+        .characters-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .character-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .character-item:last-child {
+            border-bottom: none;
+        }
+
+        .character-name {
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .character-description {
+            color: var(--muted-foreground);
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        /* Completion Section */
+        .completion-section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            display: none;
+        }
+
+        .completion-icon {
+            font-size: 3rem;
+            color: var(--success);
+            margin-bottom: 1.5rem;
+        }
+
+        .completion-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        .completion-subtitle {
+            color: var(--muted-foreground);
+            margin-bottom: 2rem;
+        }
+
+        .completion-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .btn-primary:hover {
+            background: var(--sky-600);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--ash-200);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+
+            .frames-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .completion-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* Animations */
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <a href="/" class="logo">
+                <i class="fas fa-film"></i>
+                Script Fury
+            </a>
+            <div class="breadcrumb">
+                <a href="/">Upload</a>
+                <i class="fas fa-chevron-right"></i>
+                <a href="/generate/{{ project.id }}">Configure</a>
+                <i class="fas fa-chevron-right"></i>
+                <span>Processing</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Progress Section -->
+            <section class="progress-section animate-fade-in" id="progressSection">
+                <div class="progress-header">
+                    <div class="progress-icon" id="progressIcon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h1 class="progress-title" id="progressTitle">Analyzing Screenplay</h1>
+                    <p class="progress-subtitle" id="progressSubtitle">AI is examining your script structure and identifying key visual moments...</p>
+                    
+                    <div class="progress-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="progressPercent">0%</span>
+                            <span class="stat-label">Complete</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="currentFrame">0</span>
+                            <span class="stat-label">Frames</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="totalFrames">{{ project.detected_scenes }}</span>
+                            <span class="stat-label">Total</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">
+                        <i class="fas fa-cog"></i>
+                        <span>Starting analysis...</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Frames Section -->
+            <section class="frames-section" id="framesSection">
+                <div class="frames-header">
+                    <h2 class="frames-title">Generated Frames</h2>
+                    <button class="btn btn-primary" id="printBtn" style="display: none;">
+                        <i class="fas fa-print"></i>
+                        Print Storyboard
+                    </button>
+                </div>
+                <div class="frames-content">
+                    <div class="frames-grid" id="framesGrid">
+                        <!-- Frames will be inserted here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Completion Section -->
+            <section class="completion-section" id="completionSection">
+                <div class="completion-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2 class="completion-title">Storyboard Complete!</h2>
+                <p class="completion-subtitle">Your professional storyboard has been generated successfully.</p>
+                
+                <div class="completion-actions">
+                    <button class="btn btn-primary" onclick="window.location.href='/storyboard/{{ project.id }}'">
+                        <i class="fas fa-th-large"></i>
+                        View Gallery
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='/print/{{ project.id }}'">
+                        <i class="fas fa-print"></i>
+                        Print Storyboard
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Project Info -->
+            <div class="sidebar-card animate-fade-in">
+                <div class="sidebar-header">
+                    <i class="fas fa-info-circle"></i>
+                    Project Details
+                </div>
+                <div class="sidebar-content">
+                    <div class="info-item">
+                        <span class="info-label">Filename</span>
+                        <span class="info-value">{{ project.filename }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Word Count</span>
+                        <span class="info-value">{{ project.word_count }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Style</span>
+                        <span class="info-value" id="styleInfo">{{ status.style|default('Classic') }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Detected Scenes</span>
+                        <span class="info-value">{{ project.detected_scenes }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Results -->
+            <div class="sidebar-card" id="analysisCard" style="display: none;">
+                <div class="sidebar-header">
+                    <i class="fas fa-chart-bar"></i>
+                    Analysis Results
+                </div>
+                <div class="sidebar-content" id="analysisContent">
+                    <!-- Analysis will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Characters -->
+            <div class="sidebar-card" id="charactersCard" style="display: none;">
+                <div class="sidebar-header">
+                    <i class="fas fa-users"></i>
+                    Characters
+                </div>
+                <div class="sidebar-content">
+                    <div class="characters-list" id="charactersContent">
+                        <!-- Characters will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generation Stats -->
+            <div class="sidebar-card" id="statsCard" style="display: none;">
+                <div class="sidebar-header">
+                    <i class="fas fa-chart-line"></i>
+                    Generation Stats
+                </div>
+                <div class="sidebar-content" id="statsContent">
+                    <!-- Stats will be inserted here -->
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // localStorage Cache Manager
+        class SessionCache {
+            constructor() {
+                this.keys = {
+                    CURRENT_PROJECT_ID: 'sf_current_project_id',
+                    GENERATION_STATUS: 'sf_generation_status',
+                    GENERATED_FRAMES: 'sf_generated_frames'
+                };
+            }
+
+            save(key, data) {
+                try {
+                    localStorage.setItem(key, JSON.stringify({
+                        data: data,
+                        timestamp: Date.now()
+                    }));
+                } catch (e) {
+                    console.warn('Failed to save to localStorage:', e);
+                }
+            }
+
+            load(key) {
+                try {
+                    const item = localStorage.getItem(key);
+                    if (!item) return null;
+                    
+                    const parsed = JSON.parse(item);
+                    return parsed.data;
+                } catch (e) {
+                    return null;
+                }
+            }
+        }
+
+        // Initialize
+        const sessionCache = new SessionCache();
+        const projectId = '{{ project.id }}';
+        let pollInterval;
+        let currentStatus = null;
+
+        // DOM elements
+        const progressSection = document.getElementById('progressSection');
+        const framesSection = document.getElementById('framesSection');
+        const completionSection = document.getElementById('completionSection');
+        const progressIcon = document.getElementById('progressIcon');
+        const progressTitle = document.getElementById('progressTitle');
+        const progressSubtitle = document.getElementById('progressSubtitle');
+        const progressPercent = document.getElementById('progressPercent');
+        const currentFrame = document.getElementById('currentFrame');
+        const totalFrames = document.getElementById('totalFrames');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const framesGrid = document.getElementById('framesGrid');
+        const printBtn = document.getElementById('printBtn');
+
+        // Start polling on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Clean up old project frame caches to prevent memory bloat
+            cleanOldProjectCaches(projectId);
+            
+            startPolling();
+            
+            // Load cached frames if available FOR THIS PROJECT ONLY
+            const projectFramesKey = `${sessionCache.keys.GENERATED_FRAMES}_${projectId}`;
+            const cachedFrames = sessionCache.load(projectFramesKey);
+            if (cachedFrames && cachedFrames.length > 0) {
+                console.log(`🔄 Loaded ${cachedFrames.length} cached frames for project ${projectId}`);
+                showFrames(cachedFrames);
+            } else {
+                console.log(`🆕 No cached frames found for project ${projectId}`);
+            }
+        });
+        
+        // Clean up frame caches from other projects
+        function cleanOldProjectCaches(currentProjectId) {
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('sf_generated_frames_') && !key.endsWith(`_${currentProjectId}`)) {
+                    localStorage.removeItem(key);
+                    console.log(`🧹 Cleaned old project cache: ${key}`);
+                }
+            }
+        }
+
+        function startPolling() {
+            pollInterval = setInterval(checkStatus, 1500);
+            checkStatus(); // Initial check
+        }
+
+        function stopPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        }
+
+        function checkStatus() {
+            fetch(`/status/${projectId}`)
+                .then(response => response.json())
+                .then(data => {
+                    currentStatus = data;
+                    
+                    // Cache status
+                    sessionCache.save(sessionCache.keys.GENERATION_STATUS, data);
+                    
+                    updateUI(data);
+                    
+                    if (data.status === 'completed' || data.status === 'error') {
+                        stopPolling();
+                    }
+                })
+                .catch(error => {
+                    console.error('Status check error:', error);
+                    // Continue polling on error
+                });
+        }
+
+        function updateUI(status) {
+            updateProgress(status);
+            updateSidebar(status);
+            
+            // Show frames as they're generated
+            if (status.frames && status.frames.length > 0) {
+                showFrames(status.frames);
+                // Cache frames WITH PROJECT ID to prevent cross-contamination
+                const projectFramesKey = `${sessionCache.keys.GENERATED_FRAMES}_${projectId}`;
+                sessionCache.save(projectFramesKey, status.frames);
+                console.log(`💾 Cached ${status.frames.length} frames for project ${projectId}`);
+            }
+            
+            if (status.status === 'completed') {
+                showCompletion(status);
+            } else if (status.status === 'error') {
+                showError(status.error);
+            }
+        }
+
+        function updateProgress(status) {
+            const progress = status.progress || 0;
+            const current = status.current_frame || 0;
+            const total = status.total_frames || status.frames?.length || 0;
+            
+            // Update progress bar
+            progressFill.style.width = `${progress}%`;
+            progressPercent.textContent = `${Math.round(progress)}%`;
+            currentFrame.textContent = current;
+            if (total > 0) totalFrames.textContent = total;
+            
+            // Update titles based on progress
+            if (progress < 30) {
+                progressTitle.textContent = 'Analyzing Screenplay';
+                progressSubtitle.textContent = 'AI is examining your script structure and identifying key visual moments...';
+                progressIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            } else if (progress < 60) {
+                progressTitle.textContent = 'Extracting Scenes';
+                progressSubtitle.textContent = 'Breaking down scenes and analyzing visual elements...';
+                progressIcon.innerHTML = '<i class="fas fa-cog"></i>';
+            } else {
+                progressTitle.textContent = 'Generating Frames';
+                progressSubtitle.textContent = 'Creating professional storyboard images with AI...';
+                progressIcon.innerHTML = '<i class="fas fa-magic"></i>';
+            }
+            
+            // Update progress text
+            const stepText = status.current_step || 'Processing...';
+            const icon = progress < 30 ? 'fa-spinner fa-spin' : 
+                        progress < 60 ? 'fa-cog' : 'fa-magic';
+            progressText.innerHTML = `<i class="fas ${icon}"></i><span>${stepText}</span>`;
+        }
+
+        function updateSidebar(status) {
+            // Update analysis section
+            if (status.analysis) {
+                updateAnalysisSection(status.analysis);
+                updateCharactersSection(status.analysis.characters);
+            }
+            
+            // Update stats section
+            if (status.frames) {
+                updateStatsSection(status);
+            }
+        }
+
+        function updateAnalysisSection(analysis) {
+            const analysisCard = document.getElementById('analysisCard');
+            const analysisContent = document.getElementById('analysisContent');
+            
+            analysisContent.innerHTML = `
+                <div class="info-item">
+                    <span class="info-label">Title</span>
+                    <span class="info-value">${analysis.title || 'Unknown'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Total Scenes</span>
+                    <span class="info-value">${analysis.total_scenes || 0}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Genre</span>
+                    <span class="info-value">${analysis.genre || 'Unknown'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Setting</span>
+                    <span class="info-value">${analysis.setting || 'Various'}</span>
+                </div>
+            `;
+            
+            analysisCard.style.display = 'block';
+        }
+
+        function updateCharactersSection(characters) {
+            const charactersCard = document.getElementById('charactersCard');
+            const charactersContent = document.getElementById('charactersContent');
+            
+            if (!characters || Object.keys(characters).length === 0) {
+                return;
+            }
+            
+            let html = '';
+            Object.entries(characters).forEach(([name, description]) => {
+                // Format character descriptions properly
+                let formattedDescription = '';
+                if (typeof description === 'string') {
+                    formattedDescription = description;
+                } else if (description && typeof description === 'object') {
+                    formattedDescription = Object.values(description).join(', ') || 'Character in screenplay';
+                } else {
+                    formattedDescription = 'Character in screenplay';
+                }
+                
+                html += `
+                    <div class="character-item">
+                        <div class="character-name">${name}</div>
+                        <div class="character-description">${formattedDescription}</div>
+                    </div>
+                `;
+            });
+            
+            charactersContent.innerHTML = html;
+            charactersCard.style.display = 'block';
+        }
+
+        function updateStatsSection(status) {
+            const statsCard = document.getElementById('statsCard');
+            const statsContent = document.getElementById('statsContent');
+            
+            const totalFrames = status.frames.length;
+            const completedFrames = status.frames.filter(f => f.status === 'completed').length;
+            
+            statsContent.innerHTML = `
+                <div class="info-item">
+                    <span class="info-label">Total Frames</span>
+                    <span class="info-value">${totalFrames}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Completed</span>
+                    <span class="info-value">${completedFrames}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Progress</span>
+                    <span class="info-value">${completedFrames}/${totalFrames}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Started</span>
+                    <span class="info-value">${formatTime(status.started_at)}</span>
+                </div>
+                ${status.completed_at ? `
+                    <div class="info-item">
+                        <span class="info-label">Completed</span>
+                        <span class="info-value">${formatTime(status.completed_at)}</span>
+                    </div>
+                ` : ''}
+            `;
+            
+            statsCard.style.display = 'block';
+        }
+
+        function showFrames(frames) {
+            framesSection.style.display = 'block';
+            
+            // Show print button if generation is completed
+            if (currentStatus && currentStatus.status === 'completed') {
+                printBtn.style.display = 'inline-flex';
+            }
+            
+            let html = '';
+            frames.forEach(frame => {
+                const isCompleted = frame.status === 'completed';
+                const statusText = isCompleted ? 'completed' : 'generating';
+                const statusIcon = isCompleted ? '<i class="fas fa-check"></i>' : '<i class="fas fa-clock"></i>';
+                
+                html += `
+                    <div class="frame-card ${statusText}">
+                        <div class="frame-header">
+                            <span class="frame-title">Scene ${frame.scene_number}.${frame.frame_number}</span>
+                            <span class="frame-status ${statusText}">${statusIcon} ${statusText}</span>
+                        </div>
+                        <div class="frame-image">
+                            ${isCompleted ? 
+                                `<img src="${frame.image_url}" alt="Frame ${frame.frame_id}"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` : ''
+                            }
+                            <div class="image-placeholder" style="display: ${isCompleted ? 'none' : 'block'};">
+                                <div class="placeholder-icon">
+                                    ${isCompleted ? '<i class="fas fa-image"></i>' : '<i class="fas fa-magic fa-pulse"></i>'}
+                                </div>
+                                <div><strong>Frame ${frame.scene_number}.${frame.frame_number}</strong></div>
+                                <div>${frame.location}</div>
+                            </div>
+                        </div>
+                        <div class="frame-info">
+                            <div class="frame-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${frame.location} - ${frame.time_of_day}
+                            </div>
+                            <div class="frame-description">${frame.key_visual}</div>
+                            ${frame.characters && frame.characters.length > 0 ? `
+                                <div class="frame-characters">
+                                    <i class="fas fa-users"></i>
+                                    ${frame.characters.join(', ')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            framesGrid.innerHTML = html;
+        }
+
+        function showCompletion(status) {
+            progressSection.style.display = 'none';
+            framesSection.style.display = 'block';
+            completionSection.style.display = 'block';
+            
+            // Show print button
+            printBtn.style.display = 'inline-flex';
+        }
+
+        function showError(error) {
+            progressSection.style.display = 'none';
+            progressTitle.textContent = 'Generation Failed';
+            progressSubtitle.textContent = error || 'An unknown error occurred during generation';
+            progressIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>';
+            progressSection.style.display = 'block';
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString();
+        }
+
+        // Global functions
+        window.printStoryboard = function() {
+            window.location.href = `/print/${projectId}`;
+        };
+
+        // Handle page refresh - restore from cache
+        window.addEventListener('beforeunload', function() {
+            if (currentStatus) {
+                sessionCache.save(sessionCache.keys.GENERATION_STATUS, currentStatus);
+            }
+        });
+    </script>
+</body>
+</html>

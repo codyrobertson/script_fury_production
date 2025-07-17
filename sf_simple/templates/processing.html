@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+
+{% block title %}Processing Storyboard - Script Fury Simple{% endblock %}
+
+{% block content %}
+<div class="processing-page">
+    <div class="page-header">
+        <h2>Generating Your Storyboard</h2>
+        <p>{{ project.filename }}</p>
+    </div>
+
+    <div class="processing-layout">
+        <!-- Main content area -->
+        <div class="main-content">
+            <div class="progress-section" id="progress-section">
+                <div class="progress-header">
+                    <h3 id="progress-title">Analyzing screenplay...</h3>
+                    <div class="progress-stats">
+                        <span id="progress-percent">0%</span>
+                        <span id="progress-step">Step 1 of 3</span>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                
+                <div class="progress-details">
+                    <p id="progress-detail">Starting analysis...</p>
+                </div>
+            </div>
+
+            <div class="frames-section" id="frames-section" style="display: none;">
+                <div class="frames-header">
+                    <h3>Generated Frames</h3>
+                    <div class="frames-actions">
+                        <button class="btn btn-primary" id="print-btn" onclick="printStoryboard()">
+                            🖨️ Print Storyboard
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="frames-grid" id="frames-grid">
+                    <!-- Frames will be inserted here -->
+                </div>
+            </div>
+
+            <div class="error-section" id="error-section" style="display: none;">
+                <div class="error-content">
+                    <h3>❌ Generation Failed</h3>
+                    <p id="error-message"></p>
+                    <div class="error-actions">
+                        <button class="btn btn-secondary" onclick="window.location.href='/'">
+                            Start Over
+                        </button>
+                        <button class="btn btn-primary" onclick="retryGeneration()">
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h3>Project Info</h3>
+                <div class="info-list">
+                    <div class="info-item">
+                        <span class="info-label">File:</span>
+                        <span class="info-value">{{ project.filename }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Words:</span>
+                        <span class="info-value">{{ project.word_count }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Style:</span>
+                        <span class="info-value" id="style-info">{{ status.style|default('Classic') }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Max Scenes:</span>
+                        <span class="info-value" id="max-scenes-info">{{ status.max_scenes|default(5) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="analysis-section" style="display: none;">
+                <h3>Analysis</h3>
+                <div class="analysis-content" id="analysis-content">
+                    <!-- Analysis will be inserted here -->
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="breakdown-section" style="display: none;">
+                <h3>Scene Breakdown</h3>
+                <div class="breakdown-content" id="breakdown-content">
+                    <!-- Scene breakdown will be inserted here -->
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="stats-section" style="display: none;">
+                <h3>Generation Stats</h3>
+                <div class="stats-content" id="stats-content">
+                    <!-- Stats will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const projectId = '{{ project.id }}';
+    let pollInterval;
+    let currentStatus = null;
+    
+    // Start polling for status
+    startPolling();
+    
+    function startPolling() {
+        pollInterval = setInterval(checkStatus, 2000); // Poll every 2 seconds
+        checkStatus(); // Initial check
+    }
+    
+    function stopPolling() {
+        if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+        }
+    }
+    
+    function checkStatus() {
+        fetch(`/status/${projectId}`)
+            .then(response => response.json())
+            .then(data => {
+                currentStatus = data;
+                updateUI(data);
+                
+                if (data.status === 'completed' || data.status === 'error') {
+                    stopPolling();
+                }
+            })
+            .catch(error => {
+                console.error('Status check error:', error);
+                // Continue polling on error
+            });
+    }
+    
+    function updateUI(status) {
+        updateProgress(status);
+        updateSidebar(status);
+        
+        // Show frames as they're generated (even during progress)
+        if (status.frames && status.frames.length > 0) {
+            showFrames(status.frames);
+        }
+        
+        if (status.status === 'completed') {
+            showFrames(status.frames);
+            // Show completion message with redirect option
+            setTimeout(() => {
+                const progressSection = document.getElementById('progress-section');
+                progressSection.innerHTML = `
+                    <div class="completion-message">
+                        <h2>🎉 Generation Complete!</h2>
+                        <p>Created ${status.frames.length} storyboard frames</p>
+                        <div class="completion-actions">
+                            <button class="btn btn-primary" onclick="window.location.href='/storyboard/${projectId}'">
+                                📖 View Full Storyboard Gallery
+                            </button>
+                            <button class="btn btn-secondary" onclick="printStoryboard()">
+                                🖨️ Print Storyboard
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        } else if (status.status === 'error') {
+            showError(status.error);
+        }
+    }
+    
+    function updateProgress(status) {
+        const progressFill = document.getElementById('progress-fill');
+        const progressTitle = document.getElementById('progress-title');
+        const progressPercent = document.getElementById('progress-percent');
+        const progressStep = document.getElementById('progress-step');
+        const progressDetail = document.getElementById('progress-detail');
+        
+        // Update progress bar
+        progressFill.style.width = `${status.progress || 0}%`;
+        progressPercent.textContent = `${status.progress || 0}%`;
+        
+        // Update step info
+        progressTitle.textContent = status.current_step || 'Processing...';
+        progressStep.textContent = `Step ${status.current_step_num || 1} of ${status.total_steps || 3}`;
+        progressDetail.textContent = status.current_step || 'Starting generation...';
+    }
+    
+    function updateSidebar(status) {
+        // Update analysis section
+        if (status.analysis) {
+            updateAnalysisSection(status.analysis);
+        }
+        
+        // Update breakdown section
+        if (status.analysis && status.analysis.scenes) {
+            updateBreakdownSection(status.analysis.scenes);
+        }
+        
+        // Update stats section
+        if (status.frames) {
+            updateStatsSection(status);
+        }
+    }
+    
+    function updateAnalysisSection(analysis) {
+        const analysisSection = document.getElementById('analysis-section');
+        const analysisContent = document.getElementById('analysis-content');
+        
+        analysisContent.innerHTML = `
+            <div class="analysis-item">
+                <span class="analysis-label">Title:</span>
+                <span class="analysis-value">${analysis.title}</span>
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">Scenes:</span>
+                <span class="analysis-value">${analysis.total_scenes}</span>
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">Pages:</span>
+                <span class="analysis-value">${analysis.page_count}</span>
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">Setting:</span>
+                <span class="analysis-value">${analysis.setting}</span>
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">Characters:</span>
+                <span class="analysis-value">${Object.keys(analysis.characters || {}).length}</span>
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">Character Names:</span>
+                <span class="analysis-value">${Object.keys(analysis.characters || {}).join(', ')}</span>
+            </div>
+        `;
+        
+        analysisSection.style.display = 'block';
+    }
+    
+    function updateBreakdownSection(scenes) {
+        const breakdownSection = document.getElementById('breakdown-section');
+        const breakdownContent = document.getElementById('breakdown-content');
+        
+        let html = '';
+        scenes.forEach((scene, index) => {
+            html += `
+                <div class="scene-item">
+                    <div class="scene-header">
+                        <span class="scene-number">Scene ${scene.scene_number}</span>
+                    </div>
+                    <div class="scene-details">
+                        <p class="scene-location">${scene.location}</p>
+                        <p class="scene-time">${scene.time_of_day}</p>
+                        <p class="scene-characters">${scene.characters.join(', ')}</p>
+                    </div>
+                </div>
+            `;
+        });
+        
+        breakdownContent.innerHTML = html;
+        breakdownSection.style.display = 'block';
+    }
+    
+    function updateStatsSection(status) {
+        const statsSection = document.getElementById('stats-section');
+        const statsContent = document.getElementById('stats-content');
+        
+        const totalFrames = status.frames.length;
+        const completedFrames = status.frames.filter(f => f.status === 'completed').length;
+        
+        statsContent.innerHTML = `
+            <div class="stat-item">
+                <span class="stat-label">Total Frames:</span>
+                <span class="stat-value">${totalFrames}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Completed:</span>
+                <span class="stat-value">${completedFrames}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Success Rate:</span>
+                <span class="stat-value">${Math.round(completedFrames / totalFrames * 100)}%</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Started:</span>
+                <span class="stat-value">${formatTime(status.started_at)}</span>
+            </div>
+            ${status.completed_at ? `
+                <div class="stat-item">
+                    <span class="stat-label">Completed:</span>
+                    <span class="stat-value">${formatTime(status.completed_at)}</span>
+                </div>
+            ` : ''}
+        `;
+        
+        statsSection.style.display = 'block';
+    }
+    
+    function showFrames(frames) {
+        const progressSection = document.getElementById('progress-section');
+        const framesSection = document.getElementById('frames-section');
+        const framesGrid = document.getElementById('frames-grid');
+        
+        // Show frames alongside progress (don't hide progress until completed)
+        framesSection.style.display = 'block';
+        
+        // Only hide progress if generation is completed
+        if (currentStatus && currentStatus.status === 'completed') {
+            progressSection.style.display = 'none';
+        }
+        
+        // Generate frames HTML
+        let html = '';
+        frames.forEach(frame => {
+            const isCompleted = frame.status === 'completed';
+            const statusIcon = isCompleted ? '✅' : '⏳';
+            
+            html += `
+                <div class="frame-card ${frame.status}">
+                    <div class="frame-header">
+                        <span class="frame-title">Scene ${frame.scene_number}.${frame.frame_number}</span>
+                        <span class="frame-status ${frame.status}">${statusIcon} ${frame.status}</span>
+                    </div>
+                    <div class="frame-image">
+                        <img src="${frame.image_url}" alt="Frame ${frame.frame_id}"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="image-placeholder" style="display: none;">
+                            <p>Frame ${frame.scene_number}.${frame.frame_number}</p>
+                            <p>${frame.location}</p>
+                        </div>
+                    </div>
+                    <div class="frame-info">
+                        <p class="frame-location">${frame.location} - ${frame.time_of_day}</p>
+                        <p class="frame-description">${frame.key_visual}</p>
+                        ${frame.characters && frame.characters.length > 0 ? `
+                            <p class="frame-characters">Characters: ${frame.characters.join(', ')}</p>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        framesGrid.innerHTML = html;
+    }
+    
+    function showError(error) {
+        const progressSection = document.getElementById('progress-section');
+        const errorSection = document.getElementById('error-section');
+        const errorMessage = document.getElementById('error-message');
+        
+        progressSection.style.display = 'none';
+        errorSection.style.display = 'block';
+        errorMessage.textContent = error || 'An unknown error occurred';
+    }
+    
+    function formatTime(timestamp) {
+        if (!timestamp) return '';
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString();
+    }
+    
+    // Global functions
+    window.printStoryboard = function() {
+        window.location.href = `/print/${projectId}`;
+    };
+    
+    window.retryGeneration = function() {
+        window.location.href = `/generate/${projectId}`;
+    };
+});
+</script>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Storyboard - Script Fury Simple{% endblock %}
+
+{% block content %}
+<div class="generate-page">
+    <div class="page-header">
+        <h2>Generate Your Storyboard</h2>
+        <p>Choose your style and settings</p>
+    </div>
+
+    <div class="project-info">
+        <div class="info-card">
+            <h3>{{ project.filename }}</h3>
+            <div class="project-stats">
+                <span class="stat">{{ project.word_count }} words</span>
+                <span class="stat">{{ project.char_count }} characters</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="generation-form">
+        <div class="form-section">
+            <h3>Select Style</h3>
+            <div class="styles-grid">
+                {% for style_key, style_info in styles.items() %}
+                <div class="style-card" data-style="{{ style_key }}">
+                    <div class="style-preview">
+                        <img src="/static/images/style-previews/{{ style_key }}.jpg" 
+                             alt="{{ style_info.name }}" 
+                             onerror="this.src='/static/images/placeholder.jpg'">
+                    </div>
+                    <div class="style-info">
+                        <h4>{{ style_info.name }}</h4>
+                        <p>{{ style_info.description }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Settings</h3>
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label for="auto-detect">Scene Detection</label>
+                    <div class="auto-detect-info">
+                        <div class="auto-detect-badge">
+                            <span class="badge-icon">🤖</span>
+                            <span>Automatic Detection</span>
+                        </div>
+                        <p>AI will analyze your screenplay and automatically determine the optimal number of scenes and frames for the best storyboard.</p>
+                    </div>
+                    <p class="setting-note">More scenes = longer generation time</p>
+                </div>
+
+                <div class="setting-item">
+                    <label for="frame-density">Frame Generation</label>
+                    <div class="auto-detect-info">
+                        <div class="auto-detect-badge">
+                            <span class="badge-icon">🎯</span>
+                            <span>Algorithm-Based</span>
+                        </div>
+                        <p>AI will determine optimal frame count per scene based on visual complexity, action sequences, and story importance.</p>
+                    </div>
+                    <p class="setting-note">Important scenes get more frames automatically</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Generation Preview</h3>
+            <div class="preview-info">
+                <div class="preview-item">
+                    <span class="preview-label">Detected Scenes:</span>
+                    <span class="preview-value" id="detected-scenes">{{ project.detected_scenes or 'Auto-detecting...' }}</span>
+                </div>
+                <div class="preview-item">
+                    <span class="preview-label">Estimated Frames:</span>
+                    <span class="preview-value" id="estimated-frames">Algorithm-based</span>
+                </div>
+                <div class="preview-item">
+                    <span class="preview-label">Estimated Time:</span>
+                    <span class="preview-value" id="estimated-time">Varies by complexity</span>
+                </div>
+                <div class="preview-item">
+                    <span class="preview-label">Selected Style:</span>
+                    <span class="preview-value" id="selected-style">Classic Storyboard</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-secondary" onclick="window.location.href='/'">
+                ← Back to Upload
+            </button>
+            <button class="btn btn-primary" id="generate-btn" disabled>
+                Generate Storyboard
+            </button>
+        </div>
+    </div>
+
+    <div class="generation-progress" id="generation-progress" style="display: none;">
+        <div class="progress-content">
+            <div class="progress-icon">⚡</div>
+            <h3>Starting Generation...</h3>
+            <p>This may take a few minutes</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const projectId = '{{ project.id }}';
+    let selectedStyle = null;
+    
+    // Style selection
+    const styleCards = document.querySelectorAll('.style-card');
+    const generateBtn = document.getElementById('generate-btn');
+    const selectedStyleSpan = document.getElementById('selected-style');
+    
+    styleCards.forEach(card => {
+        card.addEventListener('click', () => {
+            // Remove active class from all cards
+            styleCards.forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked card
+            card.classList.add('active');
+            
+            // Update selected style
+            selectedStyle = card.dataset.style;
+            const styleName = card.querySelector('h4').textContent;
+            selectedStyleSpan.textContent = styleName;
+            
+            // Enable generate button
+            generateBtn.disabled = false;
+        });
+    });
+
+    // Update estimates for automatic detection
+    function updateEstimates() {
+        document.getElementById('estimated-frames').textContent = 'Algorithm-based';
+        document.getElementById('estimated-time').textContent = 'Varies by complexity';
+    }
+    
+    // Initial update
+    updateEstimates();
+    
+    // Generate button handler
+    generateBtn.addEventListener('click', () => {
+        if (!selectedStyle) {
+            alert('Please select a style first');
+            return;
+        }
+        
+        startGeneration();
+    });
+    
+    function startGeneration() {
+        // Show progress
+        document.querySelector('.generation-form').style.display = 'none';
+        document.getElementById('generation-progress').style.display = 'block';
+        
+        // Start generation
+        fetch('/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                project_id: projectId,
+                style: selectedStyle
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to processing page
+                window.location.href = `/processing/${projectId}`;
+            } else {
+                alert('Generation failed: ' + (data.error || 'Unknown error'));
+                // Reset form
+                document.querySelector('.generation-form').style.display = 'block';
+                document.getElementById('generation-progress').style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Generation error:', error);
+            alert('Generation failed. Please try again.');
+            // Reset form
+            document.querySelector('.generation-form').style.display = 'block';
+            document.getElementById('generation-progress').style.display = 'none';
+        });
+    }
+});
+</script>
+{% endblock %}
