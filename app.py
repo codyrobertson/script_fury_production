@@ -75,6 +75,15 @@ STYLES = {
     }
 }
 
+@app.route('/health')
+def health_check():
+    """Health check endpoint for Railway"""
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat(),
+        'version': '1.0.0'
+    })
+
 @app.route('/')
 def upload_page():
     """Upload page - start of the flow"""
@@ -406,9 +415,13 @@ def list_projects():
     })
 
 if __name__ == '__main__':
+    import os
+    port = int(os.environ.get('PORT', 5001))
+    debug = os.environ.get('FLASK_ENV') != 'production'
+    
     print("🚀 Script Fury Simple starting...")
     print("📁 Upload folder:", app.config['UPLOAD_FOLDER'])
-    print("🌐 Visit: http://localhost:5001")
+    print(f"🌐 Visit: http://localhost:{port}")
     print("📖 Flow: Upload → Generate → Processing → Print")
     
-    app.run(debug=True, port=5001)
+    app.run(debug=debug, host='0.0.0.0', port=port)
